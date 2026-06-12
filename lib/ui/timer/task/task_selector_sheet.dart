@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:track_dev/providers/task_selector_provider.dart';
-import 'package:track_dev/ui/timer/task/task_filter_sort_sheet.dart';
+import 'package:track_dev/ui/timer/task/refine/refine.dart';
 import 'package:track_dev/ui/timer/task/task_item_tile.dart';
 import 'package:track_dev/ui/timer/task/task_selector_search_bar.dart';
 import 'package:track_dev/ui/timer/task/task_description_sheet.dart';
@@ -102,7 +102,7 @@ class TaskSelectorSheet extends HookConsumerWidget {
         TaskSelectorSearchBar(
           focusNode: searchFocusNode,
           controller: searchController,
-          onFilterSortPressed: () => showTaskFilterSortSheet(context),
+          onFilterSortPressed: () => showTaskRefineBottomSheet(context),
         ),
       ],
     );

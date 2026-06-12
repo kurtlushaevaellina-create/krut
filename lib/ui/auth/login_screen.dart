@@ -1,13 +1,39 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:track_dev/ui/auth/login_form.dart';
-import 'package:track_dev/ui/auth/auth_settings.dart';
+import 'package:track_dev/ui/auth/form/login_form.dart';
+import 'package:track_dev/ui/auth/section/login_header_section.dart';
+import 'package:track_dev/ui/auth/settings/auth_settings_sheet.dart';
 
 class LoginScreen extends ConsumerWidget {
   const LoginScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    return _LoginLayout(
+      settingsButton: IconButton(
+        icon: const Icon(Icons.settings_outlined),
+        tooltip: 'Настройки авторизации',
+        onPressed: () => showAuthSettingsSheet(context),
+      ),
+      headerSection: const LoginHeaderSection(),
+      formSection: const LoginForm(),
+    );
+  }
+}
+
+class _LoginLayout extends StatelessWidget {
+  const _LoginLayout({
+    required this.settingsButton,
+    required this.headerSection,
+    required this.formSection,
+  });
+
+  final Widget settingsButton;
+  final Widget headerSection;
+  final Widget formSection;
+
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
       body: SafeArea(
         child: Stack(
@@ -15,39 +41,24 @@ class LoginScreen extends ConsumerWidget {
             Align(
               alignment: Alignment.topRight,
               child: Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: IconButton(
-                  icon: const Icon(Icons.settings_outlined),
-                  tooltip: 'Настройки авторизации',
-                  onPressed: () => showAuthSettings(context, ref),
-                ),
+                padding: const EdgeInsets.all(8),
+                child: settingsButton,
               ),
             ),
             Center(
               child: SingleChildScrollView(
                 physics: const BouncingScrollPhysics(),
-                padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 24,
+                  vertical: 16,
+                ),
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    const Icon(
-                      Icons.av_timer_rounded,
-                      size: 80,
-                      color: Color(0xff4c662b),
-                    ),
-                    const SizedBox(height: 24),
-                    const Text(
-                      'TrackDev',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontSize: 36,
-                        fontWeight: FontWeight.bold,
-                        letterSpacing: -1.0,
-                      ),
-                    ),
+                    headerSection,
                     const SizedBox(height: 48),
-                    const LoginForm(),
+                    formSection,
                   ],
                 ),
               ),

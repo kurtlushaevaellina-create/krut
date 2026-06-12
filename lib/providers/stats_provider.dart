@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:logging/logging.dart';
 import 'package:track_dev/core/models/project.dart';
 import 'package:track_dev/core/usecase/stats.dart';
 import 'package:track_dev/core/repository/time_entries.dart';
@@ -31,6 +30,11 @@ class StatsStateNotifier extends AsyncNotifier<StatsState> {
     final end = now;
     final projectFilter = ref.watch(statsProjectFilterProvider).valueOrNull;
     return _calculate(start, end, projectFilter);
+  }
+
+  Future<void> applyRange(DateTime start, DateTime end) {
+    final current = state.value;
+    return periodStats(start, end, current?.projectFilter);
   }
 
   Future<void> currentWeekStats(Project? projectFilter) async {
@@ -139,5 +143,3 @@ final statsLayoutProvider =
     AsyncNotifierProvider<StatsLayoutNotifier, StatsLayout>(
       StatsLayoutNotifier.new,
     );
-
-final _log = Logger('StatsProvider');

@@ -4,6 +4,10 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:track_dev/core/repository/auth.dart';
 import 'package:track_dev/providers/auth_provider.dart';
 import 'package:track_dev/providers/input_validator_provider.dart';
+import 'package:track_dev/ui/auth/form/password_field.dart';
+import 'package:track_dev/ui/auth/form/server_field.dart';
+import 'package:track_dev/ui/auth/form/submit_button.dart';
+import 'package:track_dev/ui/auth/form/username_field.dart';
 
 class LoginForm extends HookConsumerWidget {
   const LoginForm({super.key});
@@ -94,7 +98,7 @@ class LoginForm extends HookConsumerWidget {
       final username = usernameController.text.trim();
       final password = passwordController.text;
 
-      bool isValid = true;
+      var isValid = true;
       if (server.isEmpty) {
         serverValidationError.value = 'Адрес сервера не может быть пустым';
         isValid = false;
@@ -114,9 +118,7 @@ class LoginForm extends HookConsumerWidget {
       submitFailed.value = false;
 
       try {
-        final authProvider = ref.read(authStateProvider.notifier);
-
-        await authProvider.logIn(server, username, password);
+        await ref.read(authStateProvider.notifier).logIn(server, username, password);
       } on AuthException catch (e) {
         submitFailed.value = true;
 
@@ -156,195 +158,29 @@ class LoginForm extends HookConsumerWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        _ServerInput(
+        ServerField(
           controller: serverController,
           validationState: serverValidationState,
           errorText: getServerErrorText(),
         ),
         const SizedBox(height: 18),
-        _UsernameInput(
+        UsernameField(
           controller: usernameController,
           errorText: usernameValidationError.value,
         ),
         const SizedBox(height: 18),
-        _PasswordInput(
+        PasswordField(
           controller: passwordController,
           errorText: passwordValidationError.value,
           onSubmitted: submit,
         ),
         const SizedBox(height: 32),
-        _SubmitButton(
+        LoginSubmitButton(
           onPressed: isSubmitting.value ? null : submit,
           isSubmitting: isSubmitting.value,
           submitFailed: submitFailed.value,
         ),
       ],
-    );
-  }
-}
-
-class _ServerInput extends StatelessWidget {
-  final TextEditingController controller;
-  final ValidationState validationState;
-  final String? errorText;
-
-  const _ServerInput({
-    required this.controller,
-    required this.validationState,
-    this.errorText,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return TextFormField(
-      controller: controller,
-      textInputAction: TextInputAction.next,
-      keyboardType: TextInputType.url,
-      decoration: InputDecoration(
-        labelText: 'Адрес сервера Redmine',
-        hintText: 'https://demo.redmine.org',
-        floatingLabelBehavior: FloatingLabelBehavior.always,
-        prefixIcon: const Icon(Icons.dns_outlined),
-        suffixIcon: _buildSuffix(),
-        errorText: errorText,
-      ),
-    );
-  }
-
-  Widget? _buildSuffix() {
-    if (controller.text.isEmpty) {
-      return null;
-    }
-
-    return switch (validationState) {
-      ValidationLoading() => const Padding(
-        padding: EdgeInsets.all(12.0),
-        child: SizedBox(
-          width: 20,
-          height: 20,
-          child: CircularProgressIndicator(strokeWidth: 2),
-        ),
-      ),
-      ValidationSuccess() => const Icon(
-        Icons.check_circle_rounded,
-        color: Colors.green,
-      ),
-      ValidationError(message: _) => const Icon(
-        Icons.error_rounded,
-        color: Colors.redAccent,
-      ),
-      ValidationIdle() => null,
-    };
-  }
-}
-
-class _UsernameInput extends StatelessWidget {
-  final TextEditingController controller;
-  final String? errorText;
-
-  const _UsernameInput({required this.controller, this.errorText});
-
-  @override
-  Widget build(BuildContext context) {
-    return TextFormField(
-      controller: controller,
-      textInputAction: TextInputAction.next,
-      decoration: InputDecoration(
-        labelText: 'Имя пользователя',
-        prefixIcon: const Icon(Icons.person_outline_rounded),
-        errorText: errorText,
-      ),
-    );
-  }
-}
-
-class _PasswordInput extends StatelessWidget {
-  final TextEditingController controller;
-  final String? errorText;
-  final VoidCallback onSubmitted;
-
-  const _PasswordInput({
-    required this.controller,
-    required this.errorText,
-    required this.onSubmitted,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return TextFormField(
-      controller: controller,
-      obscureText: true,
-      textInputAction: TextInputAction.done,
-      onFieldSubmitted: (_) => onSubmitted(),
-      decoration: InputDecoration(
-        labelText: 'Пароль',
-        prefixIcon: const Icon(Icons.lock_outline_rounded),
-        errorText: errorText,
-      ),
-    );
-  }
-}
-
-class _SubmitButton extends StatelessWidget {
-  final VoidCallback? onPressed;
-  final bool isSubmitting;
-  final bool submitFailed;
-
-  const _SubmitButton({
-    required this.onPressed,
-    required this.isSubmitting,
-    required this.submitFailed,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final primaryColor = theme.colorScheme.primary;
-    final errorColor = theme.colorScheme.error;
-
-    return AnimatedContainer(
-      duration: const Duration(milliseconds: 300),
-      curve: Curves.easeInOut,
-      height: 56,
-      decoration: BoxDecoration(
-        color: submitFailed ? errorColor : primaryColor,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: (submitFailed ? errorColor : primaryColor).withValues(
-              alpha: 0.3,
-            ),
-            blurRadius: 12,
-            offset: const Offset(0, 6),
-          ),
-        ],
-      ),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: onPressed,
-          borderRadius: BorderRadius.circular(16),
-          child: Center(
-            child: isSubmitting
-                ? const SizedBox(
-                    width: 24,
-                    height: 24,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2.5,
-                      valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                    ),
-                  )
-                : const Text(
-                    'Войти',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-          ),
-        ),
-      ),
     );
   }
 }

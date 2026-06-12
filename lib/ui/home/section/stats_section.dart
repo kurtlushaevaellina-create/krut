@@ -1,16 +1,18 @@
 import 'package:flutter/material.dart';
-import 'package:track_dev/core/usecase/stats.dart';
+import 'package:skeletonizer/skeletonizer.dart';
 import 'package:track_dev/core/repository/preferences.dart';
+import 'package:track_dev/core/usecase/stats.dart';
 
-class HomeStatCards extends StatelessWidget {
+class StatsSection extends StatelessWidget {
   final Stats stats;
   final StatsLayout layout;
+
   final VoidCallback? onTotalHoursClick;
   final VoidCallback? onCompletedTasksClick;
   final VoidCallback? onPendingTasksClick;
   final VoidCallback? onWorkingDaysClick;
 
-  const HomeStatCards({
+  const StatsSection({
     super.key,
     required this.stats,
     required this.layout,
@@ -22,62 +24,87 @@ class HomeStatCards extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final cards = [
-      _StatCard(
+    return _StatsLayout(
+      layout: layout,
+      totalCard: _StatCard(
         title: 'Общие часы',
         value: '${stats.totalWorkHours}',
         icon: Icons.access_time,
         onTap: onTotalHoursClick,
       ),
-      _StatCard(
+      completedCard: _StatCard(
         title: 'Выполнено',
         value: '${stats.completedTasks}',
         icon: Icons.check_circle_outline,
         onTap: onCompletedTasksClick,
       ),
-      _StatCard(
+      pendingCard: _StatCard(
         title: 'В ожидании',
         value: '${stats.pendingTasks}',
         icon: Icons.pending_actions,
         onTap: onPendingTasksClick,
       ),
-      _StatCard(
+      workingDaysCard: _StatCard(
         title: 'Рабочие дни',
         value: '${stats.workHoursPerDay.length} дн.',
         icon: Icons.bar_chart,
         onTap: onWorkingDaysClick,
       ),
-    ];
-
-    if (layout == StatsLayout.list) {
-      return Column(
-        children: cards.map((card) => Padding(
-          padding: const EdgeInsets.only(bottom: 12),
-          child: card,
-        )).toList(),
-      );
-    }
-
-    // Grid layout (default)
-    return Column(
-      children: [
-        Row(
-          children: [
-            Expanded(child: cards[0]),
-            const SizedBox(width: 12),
-            Expanded(child: cards[1]),
-          ],
-        ),
-        const SizedBox(height: 12),
-        Row(
-          children: [
-            Expanded(child: cards[2]),
-            const SizedBox(width: 12),
-            Expanded(child: cards[3]),
-          ],
-        ),
-      ],
     );
+  }
+}
+
+class _StatsLayout extends StatelessWidget {
+  final StatsLayout layout;
+
+  final Widget totalCard;
+  final Widget completedCard;
+  final Widget pendingCard;
+  final Widget workingDaysCard;
+
+  const _StatsLayout({
+    required this.layout,
+    required this.totalCard,
+    required this.completedCard,
+    required this.pendingCard,
+    required this.workingDaysCard,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final cards = [totalCard, completedCard, pendingCard, workingDaysCard];
+
+    return switch (layout) {
+      StatsLayout.list => Column(
+        children: cards
+            .map(
+              (card) => Padding(
+                padding: const EdgeInsets.only(bottom: 12),
+                child: card,
+              ),
+            )
+            .toList(),
+      ),
+      StatsLayout.grid => Column(
+        children: [
+          Row(
+            children: [
+              Expanded(child: cards[0]),
+              const SizedBox(width: 12),
+              Expanded(child: cards[1]),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              Expanded(child: cards[2]),
+              const SizedBox(width: 12),
+              Expanded(child: cards[3]),
+            ],
+          ),
+        ],
+      ),
+    };
   }
 }
 
@@ -108,7 +135,9 @@ class _StatCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(icon, size: 28, color: theme.colorScheme.primary),
+          Skeleton.keep(
+            child: Icon(icon, size: 28, color: theme.colorScheme.primary),
+          ),
           const SizedBox(height: 12),
           Text(
             value,
@@ -117,10 +146,12 @@ class _StatCard extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 4),
-          Text(
-            title,
-            style: theme.textTheme.bodyMedium?.copyWith(
-              color: theme.colorScheme.onSurfaceVariant,
+          Skeleton.keep(
+            child: Text(
+              title,
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: theme.colorScheme.onSurfaceVariant,
+              ),
             ),
           ),
         ],

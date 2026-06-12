@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:skeletonizer/skeletonizer.dart';
 import 'package:track_dev/core/models/project.dart';
 import 'package:track_dev/core/usecase/project_stats.dart';
 import 'package:track_dev/providers/projects_provider.dart';
+import 'package:track_dev/ui/projects/projects_error.dart';
+import 'package:track_dev/ui/projects/section/projects_list_section.dart';
 import 'package:track_dev/utils/value_or_null.dart';
 
 class ProjectsScreen extends ConsumerWidget {
@@ -11,127 +14,79 @@ class ProjectsScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final projectsStatsAsync = ref.watch(projectsStatsProvider);
-    final projectsStats = projectsStatsAsync.valueOrNull ?? const [];
+    final projectsStats =
+        projectsStatsAsync.valueOrNull ?? _placeholderProjects;
 
-    return Scaffold(
-      body: SafeArea(
-        child: ListView.builder(
-        padding: const EdgeInsets.all(16),
-        itemCount: projectsStats.length,
-        itemBuilder: (context, index) {
-          final project = projectsStats[index];
-          return ProjectCard(stats: project);
-        },
+    return _ProjectsLayout(
+      isLoading: projectsStatsAsync.isLoading,
+      hasError: projectsStatsAsync.hasError && !projectsStatsAsync.isLoading,
+      listSection: ProjectsListSection(projectsStats: projectsStats),
+      onError: ProjectsError(
+        error: projectsStatsAsync.error,
+        onRetry: () => ref.invalidate(projectsStatsProvider),
       ),
-    ),);
+    );
   }
 }
 
-class ProjectCard extends StatelessWidget {
-  final ProjectStats stats;
-
-  const ProjectCard({
-    super.key,
-    required this.stats,
+class _ProjectsLayout extends StatelessWidget {
+  const _ProjectsLayout({
+    required this.isLoading,
+    required this.hasError,
+    required this.listSection,
+    required this.onError,
   });
+
+  final bool isLoading;
+  final bool hasError;
+  final Widget listSection;
+  final Widget onError;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
-    return Card(
-      margin: const EdgeInsets.only(bottom: 12),
-      elevation: 3,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: ExpansionTile(
-        tilePadding: const EdgeInsets.symmetric(
-          horizontal: 16,
-          vertical: 8,
-        ),
-        childrenPadding: const EdgeInsets.fromLTRB(
-          16,
-          0,
-          16,
-          16,
-        ),
-        title: Text(
-          stats.project.name,
-          style: const TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.w600,
+    return Scaffold(
+      backgroundColor: theme.colorScheme.surface,
+      body: SafeArea(
+        child: Skeletonizer(
+          enabled: isLoading,
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(16),
+            child: hasError
+                ? Center(
+                    child: Padding(
+                      padding: const EdgeInsets.all(24),
+                      child: onError,
+                    ),
+                  )
+                : listSection,
           ),
         ),
-        subtitle: Text(
-          'Выполнено: ${stats.completed} | В ожидании: ${stats.pending}',
-        ),
-        children: [
-          const Divider(),
-
-          _InfoRow(
-            icon: Icons.check_circle_outline,
-            title: 'Выполненные задачи',
-            value: '${stats.completed}',
-          ),
-
-          _InfoRow(
-            icon: Icons.pending_actions,
-            title: 'Задачи в ожидании',
-            value: '${stats.pending}',
-          ),
-
-          _InfoRow(
-            icon: Icons.access_time,
-            title: 'Отработано часов',
-            value: '${stats.totalWorkHours}',
-          ),
-
-          const SizedBox(height: 12),
-
-          Align(
-            alignment: Alignment.centerLeft,
-            child: Text(
-              stats.project.description ?? 'Нет описания',
-              style: theme.textTheme.bodyMedium,
-            ),
-          ),
-        ],
       ),
     );
   }
 }
 
-class _InfoRow extends StatelessWidget {
-  final IconData icon;
-  final String title;
-  final String value;
+final _placeholderProjects = [
+  ProjectStats(
+    project: Project(id: 0, name: ""),
+    completed: 0,
+    pending: 0,
+    totalWorkHours: 0,
+  ),
 
-  const _InfoRow({
-    required this.icon,
-    required this.title,
-    required this.value,
-  });
+  ProjectStats(
+    project: Project(id: 1, name: ""),
+    completed: 0,
+    pending: 0,
+    totalWorkHours: 0,
+  ),
 
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 6),
-      child: Row(
-        children: [
-          Icon(icon),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Text(title),
-          ),
-          Text(
-            value,
-            style: const TextStyle(
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
+  ProjectStats(
+    project: Project(id: 2, name: ""),
+    completed: 0,
+    pending: 0,
+    totalWorkHours: 0,
+  ),
+];

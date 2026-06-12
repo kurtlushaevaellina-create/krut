@@ -7,7 +7,6 @@ import 'package:track_dev/data/source/local/local_storage_source.dart';
 import 'package:track_dev/data/source/local/default_local_storage_source.dart';
 import 'package:track_dev/data/source/redmine/default_redmine_api_source.dart';
 import 'package:track_dev/data/source/redmine/fake_redmine_api_source.dart';
-
 import 'package:track_dev/data/source/redmine/redmine_api_source.dart';
 import 'package:track_dev/data/source/redmine/auth/auth_session.dart';
 import 'package:track_dev/core/repository/preferences.dart';
@@ -41,6 +40,7 @@ final redmineApiSourceProvider = Provider<RedmineApiSource>((ref) {
     dio: Dio(),
     sessionStore: ref.watch(redmineSessionStore),
   );
+  return FakeRedmineApiSource();
 });
 
 final preferencesRepositoryProvider = Provider<PreferencesRepository>((ref) {

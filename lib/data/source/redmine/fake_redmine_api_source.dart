@@ -17,8 +17,8 @@ class FakeRedmineApiSource implements RedmineApiSource {
           RedmineProject(id: 2, name: 'Website', identifier: 'website'),
         ],
         _timeEntries = timeEntries ?? [
-          RedmineTimeEntry(id: 501, hours: 2.5, spentOn: DateTime.now().subtract(Duration(days: 3)), projectId: 1, issueId: 101, activityId: 9),
-          RedmineTimeEntry(id: 502, hours: 1.0, spentOn: DateTime.now().subtract(Duration(days: 4)), projectId: 2, issueId: 102, activityId: 9),
+          RedmineTimeEntry(id: 501, hours: 2.5, userId: 1, spentOn: DateTime.now().subtract(Duration(days: 3)), projectId: 1, issueId: 101, activityId: 9),
+          RedmineTimeEntry(id: 502, hours: 1.0, userId: 1, spentOn: DateTime.now().subtract(Duration(days: 4)), projectId: 2, issueId: 102, activityId: 9),
         ],
         _issues = issues ?? const [
           RedmineIssue(id: 101, assignedToId: 1, subject: 'Fix login page',  projectId: 1, status: RedmineIssueStatus(id: 1, name: 'New', isClosed: false), priorityId: 4),

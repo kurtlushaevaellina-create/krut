@@ -18,6 +18,8 @@ class TimerControlButtons extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     if (!isRunning) {
       return SizedBox(
         width: double.infinity,
@@ -39,7 +41,8 @@ class TimerControlButtons extends StatelessWidget {
             onPressed: onPause,
             style: FilledButton.styleFrom(
               padding: const EdgeInsets.symmetric(vertical: 16),
-              backgroundColor: Colors.orange,
+              backgroundColor: theme.colorScheme.tertiary,
+              foregroundColor: theme.colorScheme.onTertiary,
             ),
             child: const Text('Приостановить'),
           ),
@@ -50,7 +53,8 @@ class TimerControlButtons extends StatelessWidget {
             onPressed: onSubmit,
             style: FilledButton.styleFrom(
               padding: const EdgeInsets.symmetric(vertical: 16),
-              backgroundColor: Colors.red,
+              backgroundColor: theme.colorScheme.error,
+              foregroundColor: theme.colorScheme.onError,
             ),
             child: const Text('Завершить'),
           ),

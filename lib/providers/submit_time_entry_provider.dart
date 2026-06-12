@@ -65,19 +65,6 @@ class SubmitTimeEntryNotifier extends Notifier<SubmitTimeEntryState> {
 
   void init(StopwatchState stopwatchState) {
     final elapsed = stopwatchState.stopwatch.elapsed;
-    
-    // Check if activities are already loaded
-    final activitiesAsync = ref.read(activitiesProvider);
-    TimeEntryActivity? initialActivity;
-    if (activitiesAsync is AsyncData<List<TimeEntryActivity>>) {
-      final activities = activitiesAsync.value;
-      if (activities.isNotEmpty) {
-        initialActivity = activities.firstWhere(
-          (a) => a.isDefault,
-          orElse: () => activities.first,
-        );
-      }
-    }
 
     state = SubmitTimeEntryState(
       projectId: stopwatchState.attachedProject,
@@ -85,9 +72,35 @@ class SubmitTimeEntryNotifier extends Notifier<SubmitTimeEntryState> {
       spentOn: DateTime.now(),
       durationHours: elapsed.inHours,
       durationMinutes: elapsed.inMinutes.remainder(60),
-      selectedActivity: initialActivity,
+      selectedActivity: _defaultActivity(),
       comment: '',
       isSubmitting: false,
+    );
+  }
+
+  void ensureDefaultActivity() {
+    if (state.selectedActivity != null) return;
+
+    final defaultActivity = _defaultActivity();
+    if (defaultActivity != null) {
+      state = state.copyWith(selectedActivity: defaultActivity);
+    }
+  }
+
+  TimeEntryActivity? _defaultActivity() {
+    final activitiesAsync = ref.read(activitiesProvider);
+    if (activitiesAsync is! AsyncData<List<TimeEntryActivity>>) {
+      return null;
+    }
+
+    final activities = activitiesAsync.value;
+    if (activities.isEmpty) {
+      return null;
+    }
+
+    return activities.firstWhere(
+      (a) => a.isDefault,
+      orElse: () => activities.first,
     );
   }
 

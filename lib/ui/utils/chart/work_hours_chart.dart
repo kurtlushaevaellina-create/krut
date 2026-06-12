@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:track_dev/core/usecase/stats.dart';
-import 'package:track_dev/ui/home/week_work_hours_chart.dart';
+import 'package:track_dev/ui/utils/chart/week_work_hours_chart.dart';
 
 typedef OnSwipeTimeWindow = void Function(DateTimeRange range);
 

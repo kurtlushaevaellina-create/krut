@@ -321,13 +321,6 @@ Map<String, dynamic> _compact(Map<String, dynamic> input) {
   return input;
 }
 
-String? _spentOnQuery(DateTime? from, DateTime? to) {
-  if (from == null && to == null) return null;
-  if (from != null && to != null) return '>=${_ymd(from)}|<=${_ymd(to)}';
-  if (from != null) return '>=${_ymd(from)}';
-  return '<=${_ymd(to!)}';
-}
-
 String _ymd(DateTime date) =>
     '${date.year.toString().padLeft(4, '0')}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
 
